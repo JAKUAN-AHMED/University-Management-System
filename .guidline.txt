@@ -1,0 +1,7 @@
+npm run build           # Build the project before deployment
+npm run start:prod      # Start the server for production
+npm run start:dev       # Start the server for development
+npm run lint            # Find ESLint errors
+npm run lint:fix        # Fix ESLint errors
+npm run prettier        # Find Prettier format errors
+npm run prettier:fix    # Fix Prettier format errors
