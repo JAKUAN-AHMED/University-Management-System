@@ -1,10 +1,8 @@
-import { access } from 'fs';
 import catchAsync from "../../utils/catchAsync"
 import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import { AuthSercices } from "./Auth.services";
 import config from '../../config';
-import { ref } from 'joi';
 const login=catchAsync(async (req,res)=>{
     const result=await AuthSercices.login(req.body);
     const {refreshToken,accesToken,needsPasswordChange}=result;
@@ -50,8 +48,33 @@ const refreshToken = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
+const forgetPassword=catchAsync(async (req,res)=>{
+    const userId=req.body.id;
+    const result=await AuthSercices.forgetPassword(userId);
+    sendResponse(res,{
+        statusCode:httpStatus.OK,
+        success:true,
+        message:"Reset link is generated successfully",
+        data:result
+    })
+});
+const resetPassword=catchAsync(async (req,res)=>{
+    
+    const token=req.headers.authorization;
+    const result=await AuthSercices.resetPassword(req.body,token as string);
+    sendResponse(res,{
+        statusCode:httpStatus.OK,
+        success:true,
+        message:"Password reset Successfully",
+        data:result
+    })
+});
 export const AuthController = {
   login,
   changePassword,
   refreshToken,
+  forgetPassword,
+  resetPassword,
 };

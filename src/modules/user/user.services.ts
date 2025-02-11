@@ -1,3 +1,4 @@
+import { AdminModel } from './../Admin/admin.interface';
 import { academicSemesterModel } from './../academicSemester/academicSemester.model';
 import config from '../../config';
 import { TStudent } from '../student/student.interface';
@@ -12,20 +13,35 @@ import { AcademicDepartmentModel } from '../acdemicDepartment/academicDepartment
 import { FacultyModel } from '../Faculty/faculty.model';
 import { AdminSchemaModel } from '../Admin/admin.model';
 import { IAdmin } from '../Admin/admin.interface';
+import { sendImageToCloudinary } from '../../utils/sendImageToCloudinary';
 
-const createStudentFromDb = async (password: string, payload: TStudent) => {
+const createStudentFromDb = async (file:any,password: string, payload: TStudent) => {
   const userData: Partial<IUser> = {};
   //is password not given ,use default password
   userData.password = password || (config.default_pass as string);
 
   //set student role
   userData.role = 'student';
+  //set student email
+  userData.email = payload.email;
 
   //find admissionsemester
   const AdmissionSemester: any = await academicSemesterModel.findById(
     payload.admissionSemester,
   );
+ if (!AdmissionSemester) {
+   throw new AppError(400, 'Admission semester not found');
+ }
 
+ // find department
+ const academicDepartment = await AcademicDepartmentModel.findById(
+   payload.academicDepartment,
+ );
+
+ if (!academicDepartment) {
+   throw new AppError(400, 'Academic department not found');
+ }
+ payload.academicFaculty = academicDepartment.academicFaculty;
   const session = await mongoose.startSession();
 
   try {
@@ -33,6 +49,15 @@ const createStudentFromDb = async (password: string, payload: TStudent) => {
     session.startTransaction();
 
     userData.id = await generateStudentId(AdmissionSemester);
+    if(file)
+      {
+      const imageName = `${userData.id}${payload?.name?.firstName}`;
+      const path = file?.path;
+      const { secure_url } = await sendImageToCloudinary(imageName, path);
+      payload.profileImage = secure_url as string;
+    }
+
+    
     //create a user (transaction-1)
     const newUser = await UserModel.create([userData], { session });
 
@@ -42,7 +67,6 @@ const createStudentFromDb = async (password: string, payload: TStudent) => {
     //set id,_id as user
     payload.id = newUser[0].id; //embeding id
     payload.user = newUser[0]._id; //ref id
-
     //create a student (transaction-2)
     const newStudent = await Student.create([payload], { session });
 
@@ -66,13 +90,15 @@ const createStudentFromDb = async (password: string, payload: TStudent) => {
 };
 
 //create faculty
-const createFacultyIntoDb = async (password: string, payload: any) => {
+const createFacultyIntoDb = async (file:any,password: string, payload: any) => {
  //create a user
  const userData:Partial<IUser> = {};
  userData.password=password || (config.default_pass as string);
  
  //set faculty role
  userData.role='faculty';
+ //set facutly email
+ userData.email = payload.email;
 
  //find academic department
  const department=await AcademicDepartmentModel.findById(payload.academicDepartment);
@@ -82,7 +108,7 @@ const createFacultyIntoDb = async (password: string, payload: any) => {
     throw new AppError(httpStatus.NOT_FOUND,'Department not found');
   }
 
-
+  payload.academicFaculty = department?.academicFaculty;
   const session=await mongoose.startSession();
   try
  {
@@ -90,7 +116,15 @@ const createFacultyIntoDb = async (password: string, payload: any) => {
   session.startTransaction();
   //set department id
     userData.id=await generatedFacultyId();
-    
+    if (file) {
+      const imageName = `${userData.id}${payload?.name?.firstName}`;
+      const path = file?.path;
+      const { secure_url } = await sendImageToCloudinary(imageName, path);
+      payload.profileImage = secure_url as string;
+    }
+
+
+
     //create a user(transaction-1)
     const newUser=await UserModel.create([userData],{session});
     payload.id=newUser[0].id;
@@ -114,14 +148,26 @@ const createFacultyIntoDb = async (password: string, payload: any) => {
 };
 
 
-const createAdminIntoDb = async (password: string, payload: IAdmin) => {
+const createAdminIntoDb = async (file:any,password: string, payload: IAdmin) => {
   const userData: Partial<IUser> = {};
   userData.password = password || (config.default_pass as string);
+  //set admin role
   userData.role = 'admin';
+  //set admin email
+  userData.email = payload.email;
+
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
     userData.id = await generateAdminId();
+
+    if (file) {
+      const imageName = `${userData.id}${payload?.name?.firstName}`;
+      const path = file?.path;
+      const { secure_url } = await sendImageToCloudinary(imageName, path);
+      payload.profileImage = secure_url as string;
+    }
+
     const newUser = await UserModel.create([userData], { session });
     payload.id = newUser[0].id;
     payload.user = newUser[0]._id;
@@ -132,7 +178,7 @@ const createAdminIntoDb = async (password: string, payload: IAdmin) => {
     await session.commitTransaction();
     await session.endSession();
     return newAdmin;
-  } catch (err:any) {
+  } catch (err: any) {
     await session.abortTransaction();
     await session.endSession();
     throw new Error(err);
@@ -143,9 +189,38 @@ const getAllUsersFromDb = async () => {
   const users = await UserModel.find();
   return users;
 };
+
+//GET ME
+const getMe = async (userId: string, role: string) => {
+  // const decoded = verifyToken(token, config.jwt_access_secret as string);
+  // const { userId, role } = decoded;
+
+  let result = null;
+  if (role === 'student') {
+    result = await Student.findOne({ id: userId }).populate('user');
+  }
+  if (role === 'admin') {
+    result = await AdminSchemaModel.findOne({ id: userId }).populate('user');
+  }
+
+  if (role === 'faculty') {
+    result = await FacultyModel.findOne({ id: userId }).populate('user');
+  }
+
+  return result;
+};
+
+const changeStatus = async (id: string, payload: { status: string }) => {
+  const result = await UserModel.findByIdAndUpdate(id, payload, {
+    new: true,
+  });
+  return result;
+};
 export const UserServices = {
   createStudentFromDb,
   createFacultyIntoDb,
   createAdminIntoDb,
   getAllUsersFromDb,
+  getMe,
+  changeStatus,
 };

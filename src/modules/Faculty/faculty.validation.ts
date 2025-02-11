@@ -11,7 +11,7 @@ export const createUserNameValidationSchema = z.object({
 
 export const CreatefacultyValidationSchema = z.object({
     body: z.object({
-        password: z.string().max(20),
+        password: z.string().max(20).optional(),
         faculty: z.object({
             designation: z.string(),
             name: createUserNameValidationSchema,
@@ -24,7 +24,8 @@ export const CreatefacultyValidationSchema = z.object({
             presentAddress: z.string(),
             permanentAddress: z.string(),
             academicDepartment: z.string(),
-            profileImg: z.string().optional(),
+            academicFaculty: z.string(),
+            profileImage: z.string().optional(),
         }),
     })
 });

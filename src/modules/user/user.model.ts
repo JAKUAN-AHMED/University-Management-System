@@ -3,13 +3,15 @@ import { IUser, UserInterfaceModel } from "./user.interface";
 import { model } from "mongoose";
 import bcrypt from 'bcrypt';
 import config from "../../config";
+import { UserStatus } from "./user.constant";
 const userSchema=new Schema<IUser,UserInterfaceModel>({
     id:{type:String,required:true,unique:true},
+    email:{type:String,required:true,unique:true},
     password:{type:String,required:true,select:0},
     needsPasswordChange:{type:Boolean,default:true},
     passwordChangedAt:{type:Date},
-    role:{type:String,enum:['student','faculty','admin'],required:true},
-     status:{type:String,enum:['in-progress' , 'blocked'],default:'in-progress'},
+    role:{type:String,enum:['superAdmin','student','faculty','admin'],required:true},
+     status:{type:String,enum:UserStatus,default:'in-progress'},
     isDeleted:{type:'Boolean',default:false}
 },{
     timestamps:true

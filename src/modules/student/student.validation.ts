@@ -18,7 +18,7 @@ const localGuardianValidationSchema = z.object({
 
 const CreatestudentValidationSchema = z.object({
   body: z.object({
-    password: z.string().max(20),
+    password: z.string().max(20).optional(),
     student: z.object({
       name: z.object({
         firstName: z.string().min(1),
@@ -42,7 +42,7 @@ const CreatestudentValidationSchema = z.object({
       permanentAddress: z.string().min(1),
       guardian: guardianValidationSchema,
       localguardian: localGuardianValidationSchema,
-      profileImage: z.string().optional(),
+      // profileImage: z.string().optional(),
       admissionSemester: z.string(),
     }),
   }),

@@ -55,21 +55,25 @@ const studentSchema = new Schema<TStudent, StudentModel>(
     permanentAddress: { type: String, required: true },
     guardian: guardianSchema,
     localguardian: localguardianSchema,
-    profileImage: { type: String },
+    profileImage: { type: String ,default:''},
     admissionSemester: {
       type: Schema.Types.ObjectId,
-      ref: 'academicSemester',
+      ref: 'AcademicSemester',
     },
     academicDepartment: {
       type: Schema.Types.ObjectId,
       ref: 'AcademicDepartment',
+    },
+    academicFaculty: {
+      type: Schema.Types.ObjectId,
+      ref: 'AcademicFaculty',
     },
     isDeleted: { type: Boolean, default: false },
   },
   {
     toJSON: {
       virtuals: true,
-      versionKey:false,
+      versionKey: false,
     },
   },
 );

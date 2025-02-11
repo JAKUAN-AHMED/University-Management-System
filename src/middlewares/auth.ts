@@ -27,10 +27,10 @@ const auth = (...requiredRoles: TUSER_ROLE[]) => {
     ) as JwtPayload;
     //check if the user has the required role to access the route
    
-      const { role, id, iat } = decoded;
+      const { role, userId, iat } = decoded;
 
       // checking if the user is exist
-      const user = await UserModel.isUserExistByCustomId(id);
+      const user = await UserModel.isUserExistByCustomId(userId);
 
       if (!user) {
         throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');

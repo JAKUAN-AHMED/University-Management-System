@@ -15,7 +15,7 @@ export interface IAdmin {
     bloodGroup: IBloodGroup;
     presentAddress: string;
     permanentAddress: string;
-    profileImg?: string;
+    profileImage?: string;
     isDeleted: boolean;
 }
 export interface AdminModel extends Model<IAdmin> {

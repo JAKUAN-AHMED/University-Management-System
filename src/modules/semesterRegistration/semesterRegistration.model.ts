@@ -7,7 +7,7 @@ const semesterRegistrationSchema = new mongoose.Schema<IsemesterRegistration>(
       type: Schema.Types.ObjectId,
       required: true,
       unique: true,
-      ref: 'academicSemester',
+      ref: 'AcademicSemester',
     },
     status: {
       type: String,

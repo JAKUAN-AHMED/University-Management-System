@@ -8,7 +8,7 @@ const createAcademicFacultyController=catchAsync(async(req,res,next)=>{
      sendResponse(res, {
        statusCode: 200,
        success: true,
-       message: 'Academic Facultyt Created Successfully',
+       message: 'Academic Faculty Created Successfully',
        data: result,
      });
 
