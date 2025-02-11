@@ -22,7 +22,11 @@ const getAllcoursesFromdDB = async (query: Record<string, unknown>) => {
     .paginate()
     .fields();
   const result = await courses.modelQuery;
-  return result;
+  const meta = await courses.countTotal();
+  return {
+    result,
+    meta,
+  };
 };
 
 //get single course
