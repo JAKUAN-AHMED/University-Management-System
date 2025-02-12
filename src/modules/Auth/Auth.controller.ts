@@ -9,9 +9,11 @@ const login=catchAsync(async (req,res)=>{
 
     //set cookie
 
-    res.cookie("refreshToken",refreshToken,{
-        secure:config.NODE_ENV==="production",  
-        httpOnly:true,
+    res.cookie('refreshToken', refreshToken, {
+      secure: config.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'none',
+      maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
     });
     sendResponse(res,{
         statusCode:httpStatus.OK,

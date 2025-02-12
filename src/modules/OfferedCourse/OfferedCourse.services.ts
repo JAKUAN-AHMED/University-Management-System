@@ -282,8 +282,8 @@ const getMyOfferedCoursesFromDB = async (
     {
       $match: {
         semesterRegistration: currentOngoingRegistrationSemester?._id,
-        academicFaculty: student.academicFaculty,
-        academicDepartment: student.academicDepartment,
+        academicFaculty: student?.academicFaculty,
+        academicDepartment: student?.academicDepartment,
       },
     },
     {
